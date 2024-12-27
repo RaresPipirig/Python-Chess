@@ -56,13 +56,3 @@ class Board:
     """Setup pieces for a given game state"""
     def __init_pieces(self, state):
         self.pieces = state
-
-    """Saves the state of the current game in a file"""
-    def save_state(self):
-        # to implement
-        return
-
-    """Loads the state of a game given a file path """
-    def load_state(self, path):
-        # to implement
-        return
