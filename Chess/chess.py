@@ -9,4 +9,4 @@ if arg == 0:
     raise Exception("Invalid argument(s).")
 
 current_game = Game()
-current_game.start(arg)
+current_game.start(sys.argv[1])
