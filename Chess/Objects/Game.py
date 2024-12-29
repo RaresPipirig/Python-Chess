@@ -31,20 +31,22 @@ class Game:
             self.__run_1_player(display, clock, FPS)
             return
         if arg == "player":
-            self.__run_2_player()
+            self.__run_2_player(display, clock, FPS)
             return
 
         # we should only reach here if the VALID argument is a path to a game state file
+        """
         try:
             self.__read_game_state(arg)
             game_type = self.__choose_game_type() # the user is prompted to choose an opponent type
             if game_type == "computer":
-                self.__run_1_player()
+                self.__run_1_player(display, clock, FPS)
             else:
-                self.__run_2_player()
+                self.__run_2_player(display, clock, FPS)
         except Exception as err:
             print("An exception occurred when loading the game save:")
             print(Exception)
+        """
 
 
 
@@ -57,14 +59,26 @@ class Game:
                 if event.type == pygame.QUIT:
                     return
 
-            draw_board(pieces, index, misc, display, self.board, self.turn)
+            mouse_pos = pygame.mouse.get_pos()
+
+            draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos)
             pygame.display.update()
             clock.tick(FPS)
 
     """Runs the 2 player game until the end or until stopped"""
-    def __run_2_player(self):
-        # to implement
-        return
+    def __run_2_player(self, display, clock, FPS):
+        pieces, index, misc = load_assets()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+
+            mouse_pos = pygame.mouse.get_pos()
+
+            draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos)
+            pygame.display.update()
+            clock.tick(FPS)
 
     """Loads a game state into self from a game state file"""
     def __read_game_state(self, path):

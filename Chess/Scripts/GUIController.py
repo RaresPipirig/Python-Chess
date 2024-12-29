@@ -64,8 +64,14 @@ def load_assets():
     return pieces, index, misc
 
 """Draws the game board upon being given a game state"""
-def draw_board(pieces, index, misc, display, board, turn):
-    display.fill((255,255,255))
+def draw_board(pieces, index, misc, display, board, turn, mouse_pos):
+    __draw_game_board(board, display, index)
+    __draw_gameplay_elements(board, display, pieces, misc, turn)
+
+
+"""Draws the chess board itself"""
+def __draw_game_board(board, display, index):
+    display.fill((255, 255, 255))
 
     # drawing the chess board
     i, j = 0, 0
@@ -73,29 +79,18 @@ def draw_board(pieces, index, misc, display, board, turn):
     for lines in layout:
         for fields in lines:
             if layout[i][j] == 0:
-                color = (255, 253, 219) # white
+                color = (255, 253, 219)  # white
             elif layout[i][j] == 1:
-                color = (98, 135, 80) # black
+                color = (98, 135, 80)  # black
             else:
-                color = (219, 255, 220) # border
+                color = (219, 255, 220)  # border
 
             pygame.draw.rect(display, color, pygame.Rect((i * 96, j * 96), (96, 96)))
             j += 1
         i += 1
         j = 0
 
-    # drawing the pieces
-    i, j = 0, 0
-    pieces_layout = board.get_pieces()
-    for lines in layout:
-        for fields in lines:
-            display.blit(pieces[pieces_layout[i][j]], (j * 96, i * 96))
-            j += 1
-        i += 1
-        j = 0
-
     # drawing the number indexes
-
     i = 10
     layout = board.get_height_index()
     while i > -1:
@@ -110,5 +105,21 @@ def draw_board(pieces, index, misc, display, board, turn):
         display.blit(index[layout[i]], (96 * i, 96 * (10 - 1)))
         i += 1
 
+"""Draws the gameplay elements:
+Chess pieces
+Turn indicator
+"""
+def __draw_gameplay_elements(board, display, pieces, misc, turn):
+    # drawing the pieces
+    layout = board.get_layout()
+    i, j = 0, 0
+    pieces_layout = board.get_pieces()
+    for lines in layout:
+        for fields in lines:
+            display.blit(pieces[pieces_layout[i][j]], (j * 96, i * 96))
+            j += 1
+        i += 1
+        j = 0
+
     # drawing player turn
-    display.blit(misc[turn], (0,0))
+    display.blit(misc[turn], (0, 0))
