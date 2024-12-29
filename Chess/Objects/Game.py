@@ -1,8 +1,7 @@
-from logging import exception
-
 from Objects.Board import Board
+from Scripts.GUIController import *
 
-
+"""Class for handling all game logic"""
 class Game:
     """Turn conventions:
     white - 0
@@ -26,8 +25,10 @@ class Game:
 
     """Determines the type of game based on arguments and starts it"""
     def start(self, arg):
+        display, clock, FPS = setup_display()
+
         if arg == "computer":
-            self.__run_1_player()
+            self.__run_1_player(display, clock, FPS)
             return
         if arg == "player":
             self.__run_2_player()
@@ -48,9 +49,17 @@ class Game:
 
 
     """Runs the 1 player game until the end or until stopped"""
-    def __run_1_player(self):
-        # to implement
-        return
+    def __run_1_player(self, display, clock, FPS):
+        pieces, index, misc = load_assets()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+
+            draw_board(pieces, index, misc, display, self.board, self.turn)
+            pygame.display.update()
+            clock.tick(FPS)
 
     """Runs the 2 player game until the end or until stopped"""
     def __run_2_player(self):
