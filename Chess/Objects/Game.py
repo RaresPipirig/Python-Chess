@@ -1,7 +1,7 @@
 from Objects.Board import Board
 from Scripts.GUIController import *
 
-"""Class for handling all game logic"""
+"""Class for managing all game logic"""
 class Game:
     """Turn conventions:
     white - 0
@@ -47,7 +47,6 @@ class Game:
             print("An exception occurred when loading the game save:")
             print(Exception)
         """
-
 
 
     """Runs the 1 player game until the end or until stopped"""

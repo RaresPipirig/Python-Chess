@@ -1,5 +1,5 @@
 import pygame
-from Objects.Board import Board
+from Scripts.TurnValidator import __move_matrix, is_in_check
 
 """Functions for handling all GUI operations"""
 
@@ -58,7 +58,8 @@ def load_assets():
     # load miscellaneous assets
     misc = {
         0 : pygame.transform.scale(pygame.image.load("Assets/turn_white.png"), (960,96)),
-        1 : pygame.transform.scale(pygame.image.load("Assets/turn_black.png"), (960,96))
+        1 : pygame.transform.scale(pygame.image.load("Assets/turn_black.png"), (960,96)),
+        3 : pygame.transform.scale(pygame.image.load("Assets/check.png"), (96,960))
     }
 
     return pieces, index, misc
@@ -67,6 +68,7 @@ def load_assets():
 def draw_board(pieces, index, misc, display, board, turn, mouse_pos):
     __draw_game_board(board, display, index)
     __draw_gameplay_elements(board, display, pieces, misc, turn)
+    #__draw_matrix(board, display)
 
 
 """Draws the chess board itself"""
@@ -123,3 +125,24 @@ def __draw_gameplay_elements(board, display, pieces, misc, turn):
 
     # drawing player turn
     display.blit(misc[turn], (0, 0))
+
+    if is_in_check(turn, board.get_flipped_board()):
+        display.blit(misc[3], (9 * 96, 0))
+
+"""Test function"""
+def __draw_matrix(board, display):
+    i, j = 0, 0
+    game_board = board.get_pieces()
+    layout = __move_matrix(game_board, (8, 7))
+    for lines in layout:
+        for fields in lines:
+            if layout[i][j] == 1:
+                color = (148, 255, 48)
+                pygame.draw.rect(display, color, pygame.Rect((j * 96, i * 96), (96, 96)), 10)
+            elif layout[i][j] == 2:
+                color = (245, 237, 12)
+                pygame.draw.rect(display, color, pygame.Rect((j * 96, i * 96), (96, 96)), 10)
+
+            j += 1
+        i += 1
+        j = 0

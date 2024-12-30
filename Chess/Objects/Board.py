@@ -60,6 +60,13 @@ class Board:
                        [0, 2, 3, 4, 5, 6, 4, 3, 2, 0],
                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
+    def get_flipped_board(self):
+        copy = self.pieces.copy()
+        copy = list(zip(*copy[::-1]))
+        copy = list(zip(*copy[::-1]))
+
+        return copy
+
     """Setup pieces for a given game state"""
     def __init_pieces(self, state):
         self.pieces = state
