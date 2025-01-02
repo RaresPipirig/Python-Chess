@@ -1,5 +1,5 @@
 import pygame
-from Scripts.TurnValidator import __move_matrix, is_in_check
+from Scripts.TurnValidator import move_matrix, is_in_check, is_valid_move, get_all_valid_moves, get_all_possible_moves
 
 """Functions for handling all GUI operations"""
 
@@ -65,10 +65,20 @@ def load_assets():
     return pieces, index, misc
 
 """Draws the game board upon being given a game state"""
-def draw_board(pieces, index, misc, display, board, turn, mouse_pos):
+def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected):
     __draw_game_board(board, display, index)
     __draw_gameplay_elements(board, display, pieces, misc, turn)
+    __draw_mouse_interaction(board, display, turn, mouse_pos, selected)
+
+    """tests"""
     #__draw_matrix(board, display)
+    #print(is_valid_move(board.get_pieces(), turn, (7, 5), (5, 6)))
+    #print(get_all_valid_moves(board.get_pieces(), turn, (8, 2)))
+    #print(get_all_possible_moves(board.get_pieces(), turn))
+
+"""Makes the GUI interactive with the mouse"""
+def __draw_mouse_interaction(board, display, turn, mouse_pos, selected):
+    pass
 
 
 """Draws the chess board itself"""
@@ -133,15 +143,15 @@ def __draw_gameplay_elements(board, display, pieces, misc, turn):
 def __draw_matrix(board, display):
     i, j = 0, 0
     game_board = board.get_pieces()
-    layout = __move_matrix(game_board, (8, 7))
+    layout = move_matrix(game_board, (8, 7))
     for lines in layout:
         for fields in lines:
             if layout[i][j] == 1:
                 color = (148, 255, 48)
-                pygame.draw.rect(display, color, pygame.Rect((j * 96, i * 96), (96, 96)), 10)
+                pygame.draw.rect(display, color, pygame.Rect((j * 96, i * 96), (96, 96)), 12)
             elif layout[i][j] == 2:
                 color = (245, 237, 12)
-                pygame.draw.rect(display, color, pygame.Rect((j * 96, i * 96), (96, 96)), 10)
+                pygame.draw.rect(display, color, pygame.Rect((j * 96, i * 96), (96, 96)), 12)
 
             j += 1
         i += 1

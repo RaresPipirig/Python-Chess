@@ -12,6 +12,7 @@ class Game:
     def __init__(self):
         self.board = Board()
         self.turn = 0
+        self.selected = (0,0)
 
     """Saves the state of the current game in a file"""
     def __save_state(self):
@@ -75,7 +76,7 @@ class Game:
 
             mouse_pos = pygame.mouse.get_pos()
 
-            draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos)
+            draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos, self.selected)
             pygame.display.update()
             clock.tick(FPS)
 

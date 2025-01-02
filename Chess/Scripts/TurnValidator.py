@@ -1,3 +1,4 @@
+import copy
 
 """Checks if the player whose turn it is is in check"""
 def is_in_check(turn, board):
@@ -28,17 +29,71 @@ def is_in_check(turn, board):
 
     return False
 
+"""Returns a list of all valid moves for all the pieces belonging to the player"""
+def get_all_possible_moves(board, turn):
+    reference = 6 + 6 * turn
+    moves = []
+
+    i, j = 0, 0
+    for line in board:
+        for field in line:
+            if field != 0 and __is_same_color(reference, field):
+                aux = get_all_valid_moves(board, turn, (i, j))
+                if len(aux) != 0:
+                    moves.append(((i, j), aux))
+            j += 1
+        i += 1
+        j = 0
+
+    return moves
+
+"""Returns a list of all valid moves for a given piece"""
+def get_all_valid_moves(board, turn, piece_pos):
+    matrix = move_matrix(board, piece_pos)
+    moves = []
+
+    i, j = 0, 0
+    for line in matrix:
+        for field in line:
+            if field != 0:
+                if is_valid_move(board, turn, piece_pos, (i, j)):
+                    moves.append((i, j))
+
+            j += 1
+        i += 1
+        j = 0
+
+    return moves
+
+"""Checks if a given move is valid."""
+def is_valid_move(board, turn, piece_pos, target_pos):
+    matrix = move_matrix(board, piece_pos)
+
+    if matrix[target_pos[0]][target_pos[1]] == 0:
+        return False # the piece cannot physically move there
+
+    # simulate the move and see if it leads to the king being in check
+    board_copy = copy.deepcopy(board)
+
+    board_copy[target_pos[0]][target_pos[1]] = board[piece_pos[0]][piece_pos[1]]
+    board_copy[piece_pos[0]][piece_pos[1]] = 0
+
+    if is_in_check(turn, board_copy):
+        return False
+
+    return True
+
 
 """Given a coord on the board, checks if the given piece puts the enemy king in check"""
 def __checks(board, piece_pos, king_pos):
-    matrix = __move_matrix(board, piece_pos)
+    matrix = move_matrix(board, piece_pos)
     if matrix[king_pos[0]][king_pos[1]] != 0:
         return True
 
     return False
 
 """Given the coord of a piece on the board, checks all places a piece can move including by capturing"""
-def __move_matrix(board, piece_pos):
+def move_matrix(board, piece_pos):
     # initialise empty move matrix
     matrix = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
