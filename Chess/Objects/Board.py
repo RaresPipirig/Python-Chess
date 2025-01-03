@@ -1,4 +1,7 @@
 """Setup and remember the state of the board"""
+import copy
+
+
 class Board:
     """Game piece conventions:
     no piece - 0
@@ -61,11 +64,11 @@ class Board:
                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
     def get_flipped_board(self):
-        copy = self.pieces.copy()
-        copy = list(zip(*copy[::-1]))
-        copy = list(zip(*copy[::-1]))
+        board_copy = copy.deepcopy(self.pieces)
+        board_copy = list(zip(*board_copy[::-1]))
+        board_copy = list(zip(*board_copy[::-1]))
 
-        return copy
+        return [list(row) for row in board_copy]
 
     """Setup pieces for a given game state"""
     def __init_pieces(self, state):

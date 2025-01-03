@@ -1,5 +1,6 @@
 import pygame
-from Scripts.TurnValidator import move_matrix, is_in_check, is_valid_move, get_all_valid_moves, get_all_possible_moves
+from Scripts.TurnValidator import move_matrix, is_in_check, is_valid_move, get_all_valid_moves, get_all_possible_moves, \
+    is_same_color
 
 """Functions for handling all GUI operations"""
 
@@ -59,7 +60,10 @@ def load_assets():
     misc = {
         0 : pygame.transform.scale(pygame.image.load("Assets/turn_white.png"), (960,96)),
         1 : pygame.transform.scale(pygame.image.load("Assets/turn_black.png"), (960,96)),
-        3 : pygame.transform.scale(pygame.image.load("Assets/check.png"), (96,960))
+        3 : pygame.transform.scale(pygame.image.load("Assets/check.png"), (96,960)),
+        4 : pygame.transform.scale(pygame.image.load("Assets/mate.png"), (96,960)),
+        5 : pygame.transform.scale(pygame.image.load("Assets/white_wins.png"), (960,192)),
+        6 : pygame.transform.scale(pygame.image.load("Assets/black_wins.png"), (960,192))
     }
 
     return pieces, index, misc
@@ -68,7 +72,13 @@ def load_assets():
 def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected):
     __draw_game_board(board, display, index)
     __draw_gameplay_elements(board, display, pieces, misc, turn)
-    __draw_mouse_interaction(board, display, turn, mouse_pos, selected)
+
+    # if the game has ended, don't draw the mouse interaction
+    if (is_in_check(turn, board.get_pieces())
+        and len(get_all_possible_moves(board.get_pieces(), turn)) == 0):
+            __draw_game_end(display, turn, misc)
+    else:
+        __draw_mouse_interaction(board, display, turn, mouse_pos, selected)
 
     """tests"""
     #__draw_matrix(board, display)
@@ -76,10 +86,50 @@ def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected):
     #print(get_all_valid_moves(board.get_pieces(), turn, (8, 2)))
     #print(get_all_possible_moves(board.get_pieces(), turn))
 
+def __draw_game_end(display, turn, misc):
+    if turn == 0:
+        display.blit(misc[6], (0, 4 * 96))
+    else:
+        display.blit(misc[5], (0, 4 * 96))
+
 """Makes the GUI interactive with the mouse"""
 def __draw_mouse_interaction(board, display, turn, mouse_pos, selected):
-    pass
+    reference = 6 + turn * 6
+    green = (106, 252, 143)
+    red = (252, 106, 130)
+    yellow = (252, 237, 106)
 
+    if selected != (0,0):
+        pygame.draw.rect(display, yellow, pygame.Rect((selected[1] * 96, selected[0] * 96), (96, 96)), 8)
+
+    layout = board.get_pieces()
+    i = int(mouse_pos[1] / 96)
+    j = int(mouse_pos[0] / 96)
+    field = layout[i][j]
+
+    # if there is a piece that belongs to the player and isn't selected
+    if field != 0 and is_same_color(reference, field) and (i, j) != selected:
+        # if the piece has valid moves
+        if len(get_all_valid_moves(layout, turn, (i, j))) != 0:
+            pygame.draw.rect(display, green, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
+        # if the piece has no valid moves
+        else:
+            pygame.draw.rect(display, red, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
+
+    # if a piece is selected
+    if selected != (0,0):
+        matrix = move_matrix(layout, selected)
+
+        field = matrix[i][j]
+        if field != 0: # if the selected piece can move to the field under the cursor
+            if is_valid_move(layout, turn, selected, (i,j)):
+                if field == 1: # move normally
+                    pygame.draw.rect(display, green, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
+                else: # move by capturing
+                    pygame.draw.rect(display, yellow, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
+
+            else: # coloring red if the piece can move there but is not a valid move
+                pygame.draw.rect(display, red, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
 
 """Draws the chess board itself"""
 def __draw_game_board(board, display, index):
@@ -134,10 +184,15 @@ def __draw_gameplay_elements(board, display, pieces, misc, turn):
         j = 0
 
     # drawing player turn
-    display.blit(misc[turn], (0, 0))
+    if not (is_in_check(turn, board.get_pieces())
+            and len(get_all_possible_moves(board.get_pieces(), turn)) == 0):
+                display.blit(misc[turn], (0, 0))
 
-    if is_in_check(turn, board.get_flipped_board()):
-        display.blit(misc[3], (9 * 96, 0))
+    if is_in_check(turn, board.get_pieces()):
+        if len(get_all_possible_moves(board.get_pieces(), turn)) == 0:
+            display.blit(misc[4], (9 * 96, 0))
+        else:
+            display.blit(misc[3], (9 * 96, 0))
 
 """Test function"""
 def __draw_matrix(board, display):

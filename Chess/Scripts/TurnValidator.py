@@ -19,7 +19,7 @@ def is_in_check(turn, board):
     i, j = 0, 0
     for line in board:
         for cell in line:
-            if not __is_same_color(king, cell) and (cell % 6) != 0:
+            if not is_same_color(king, cell) and (cell % 6) != 0:
                 if __checks(board, (i,j), king_pos):
                     return True
 
@@ -37,7 +37,7 @@ def get_all_possible_moves(board, turn):
     i, j = 0, 0
     for line in board:
         for field in line:
-            if field != 0 and __is_same_color(reference, field):
+            if field != 0 and is_same_color(reference, field):
                 aux = get_all_valid_moves(board, turn, (i, j))
                 if len(aux) != 0:
                     moves.append(((i, j), aux))
@@ -75,7 +75,7 @@ def is_valid_move(board, turn, piece_pos, target_pos):
     # simulate the move and see if it leads to the king being in check
     board_copy = copy.deepcopy(board)
 
-    board_copy[target_pos[0]][target_pos[1]] = board[piece_pos[0]][piece_pos[1]]
+    board_copy[target_pos[0]][target_pos[1]] = board_copy[piece_pos[0]][piece_pos[1]]
     board_copy[piece_pos[0]][piece_pos[1]] = 0
 
     if is_in_check(turn, board_copy):
@@ -148,15 +148,17 @@ def __navigate_pawn(board, piece_pos, matrix):
     y = piece_pos[1]
     piece = board[x][y]
 
-    if board[x - 1][y - 1] != 0 and not __is_same_color(piece, board[x - 1][y - 1]):
+    if board[x - 1][y - 1] != 0 and not is_same_color(piece, board[x - 1][y - 1]):
         matrix[x - 1][y - 1] = 2
 
-    if board[x - 1][y + 1] != 0 and not __is_same_color(piece, board[x - 1][y + 1]):
+    if board[x - 1][y + 1] != 0 and not is_same_color(piece, board[x - 1][y + 1]):
         matrix[x - 1][y + 1] = 2
 
     """to implement: en passant"""
 
-    if board[x - 1][y] == 0:
+    """to implement: pawn promotion"""
+
+    if board[x - 1][y] == 0 and not __is_out_of_bounds((x - 1, y)):
         matrix[x- 1][y] = 1
     else:
         return matrix
@@ -178,7 +180,7 @@ def __navigate_rook(board, piece_pos, matrix):
 
         if field == 0:
             matrix[x + i][y] = 1
-        elif __is_same_color(piece, field):
+        elif is_same_color(piece, field):
             break
         else:
             matrix[x + i][y] = 2
@@ -192,7 +194,7 @@ def __navigate_rook(board, piece_pos, matrix):
 
         if field == 0:
             matrix[x - i][y] = 1
-        elif __is_same_color(piece, field):
+        elif is_same_color(piece, field):
             break
         else:
             matrix[x - i][y] = 2
@@ -206,7 +208,7 @@ def __navigate_rook(board, piece_pos, matrix):
 
         if field == 0:
             matrix[x][y + i] = 1
-        elif __is_same_color(piece, field):
+        elif is_same_color(piece, field):
             break
         else:
             matrix[x][y + i] = 2
@@ -220,7 +222,7 @@ def __navigate_rook(board, piece_pos, matrix):
 
         if field == 0:
             matrix[x][y - i] = 1
-        elif __is_same_color(piece, field):
+        elif is_same_color(piece, field):
             break
         else:
             matrix[x][y - i] = 2
@@ -252,7 +254,7 @@ def __navigate_knight(board, piece_pos, matrix):
 
             if field == 0:
                 matrix[field_x_y[0]][field_x_y[1]] = 1 # if it's empty I can go there
-            elif not __is_same_color(piece, field):
+            elif not is_same_color(piece, field):
                 matrix[field_x_y[0]][field_x_y[1]] = 2 # if it's a different color piece I can capture
 
     return matrix
@@ -269,7 +271,7 @@ def __navigate_bishop(board, piece_pos, matrix):
 
         if field == 0:
             matrix[x + i][y + i] = 1
-        elif __is_same_color(piece, field):
+        elif is_same_color(piece, field):
             break
         else:
             matrix[x + i][y + i] = 2
@@ -283,7 +285,7 @@ def __navigate_bishop(board, piece_pos, matrix):
 
         if field == 0:
             matrix[x + i][y - i] = 1
-        elif __is_same_color(piece, field):
+        elif is_same_color(piece, field):
             break
         else:
             matrix[x + i][y - i] = 2
@@ -297,7 +299,7 @@ def __navigate_bishop(board, piece_pos, matrix):
 
         if field == 0:
             matrix[x - i][y + i] = 1
-        elif __is_same_color(piece, field):
+        elif is_same_color(piece, field):
             break
         else:
             matrix[x - i][y + i] = 2
@@ -311,7 +313,7 @@ def __navigate_bishop(board, piece_pos, matrix):
 
         if field == 0:
             matrix[x - i][y - i] = 1
-        elif __is_same_color(piece, field):
+        elif is_same_color(piece, field):
             break
         else:
             matrix[x - i][y - i] = 2
@@ -337,8 +339,8 @@ def __navigate_king(board, piece_pos, matrix):
     return matrix
 
 """Checks if two given pieces are of the same color"""
-def __is_same_color(piece_1, piece_2):
-    if (piece_1 < 7 and piece_2 < 7) or (piece_1 > 7 and piece_2 > 7):
+def is_same_color(piece_1, piece_2):
+    if (piece_1 < 7 and piece_2 < 7) or (piece_1 >= 7 and piece_2 >= 7):
         return True
 
     return False
