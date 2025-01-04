@@ -455,13 +455,14 @@ def __can_castle_left(board, piece_pos, en_passant):
 
 """Determines if the enemy king is in the proximity of a given field."""
 def __enemy_king_in_proximity(board, king ,pos, proximity_matrix):
+
     # go around the given field
     for line in proximity_matrix:
         # this function is never called on an out-of-bounds field so this is fine
         field = board[pos[0] + line[0]][pos[1] + line[1]]
 
         # if we find the enemy king
-        if field % 6 == 0 and not is_same_color(king, field):
+        if field != 0 and field % 6 == 0 and not is_same_color(king, field):
             return True
     # we haven't found the enemy king in any of the surrounding fields
     return False

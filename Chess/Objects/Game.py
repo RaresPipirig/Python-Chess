@@ -57,7 +57,33 @@ class Game:
 
     """Runs the 1 player game until the end or until stopped"""
     def __run_1_player(self, display, clock, FPS):
-        pass
+        pieces, index, misc = load_assets()
+
+        # main game loop
+        while True:
+            mouse_pos = pygame.mouse.get_pos()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    # save location of mouse_down
+                    self.down_press = (int(mouse_pos[1] / 96), int(mouse_pos[0] / 96))
+
+                if event.type == pygame.MOUSEBUTTONUP:
+                    i, j = (int(mouse_pos[1] / 96), int(mouse_pos[0] / 96))
+
+                    # if MOUSEBUTTONUP and MOUSEBUTTONDOWN were done on the same tile
+                    if (i, j) == self.down_press:
+                        self.__handle_MOUSEBUTTONUP(mouse_pos)  # handle the click
+                    # otherwise ignore press (cancel action)
+                    else:
+                        self.down_press = (0, 0)
+
+            draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos, self.selected, self.en_passant)
+            pygame.display.update()
+            clock.tick(FPS)
 
     """Runs the 2 player game until the end or until stopped"""
     def __run_2_player(self, display, clock, FPS):
