@@ -98,6 +98,10 @@ class Game:
         j = int(mouse_pos[0] / 96)
         field = layout[i][j]
 
+        if layout[self.selected[0]][self.selected[1]] % 6 == 1 and self.selected[0] == 1:
+            self.__handle_click_pawn_promotion((i, j), layout[self.selected[0]][self.selected[1]])
+            return
+
         # if I click on a piece that is mine and isn't the selected piece
         if field != 0 and is_same_color(reference, field) and (i, j) != self.selected:
             # if the piece has valid moves
@@ -124,6 +128,26 @@ class Game:
                     self.en_passant[self.turn][8 - j + 1] = 1 # mark it for en passant
 
                 self.__make_move((i, j))
+
+    def __handle_click_pawn_promotion(self, mouse_pos, pawn):
+        i, j = mouse_pos[0], mouse_pos[1]
+
+        switch = {
+            2: 4,
+            3: 3,
+            4: 2,
+            5: 1
+        }
+
+        if j != self.selected[1] or i < 1 or i > 5:
+            self.selected = (0,0)
+        else:
+            if i == 1:
+                return
+
+            self.board.get_pieces()[self.selected[0]][self.selected[1]] = pawn + switch[i]
+            self.__change_turn()
+
 
     """Moves selected piece to target_pos
     This function is only called after the move has been validated.

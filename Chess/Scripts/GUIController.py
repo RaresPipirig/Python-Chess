@@ -77,6 +77,14 @@ def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected, e
     if (is_in_check(turn, board.get_pieces(), en_passant)
         and len(get_all_possible_moves(board.get_pieces(), turn, en_passant)) == 0):
             __draw_game_end(display, turn, misc)
+    # if the selected piece is a pawn on promotion
+    elif board.get_pieces()[selected[0]][selected[1]] % 6 == 1 and selected[0] == 1:
+        # custom interaction
+        __pawn_promotion_interaction(display,
+                                     mouse_pos,
+                                     pieces,
+                                     selected,
+                                     board.get_pieces()[selected[0]][selected[1]])
     else:
         __draw_mouse_interaction(board, display, turn, mouse_pos, selected, en_passant)
 
@@ -86,6 +94,28 @@ def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected, e
     #print(get_all_valid_moves(board.get_pieces(), turn, (8, 2)))
     #print(get_all_possible_moves(board.get_pieces(), turn))
 
+def __pawn_promotion_interaction(display, mouse_pos, pieces, selected, pawn):
+    yellow = (252, 237, 106)
+    green = (106, 252, 143)
+
+    # selected box
+    pygame.draw.rect(display, yellow, pygame.Rect((selected[1] * 96, selected[0] * 96), (96, 96)), 8)
+    # dropdown box
+    pygame.draw.rect(display, yellow, pygame.Rect((selected[1] * 96, 2 * 96), (96, 4 * 96)))
+
+    # draw pieces pawn can promote to
+    display.blit(pieces[pawn + 4], (selected[1] * 96, 2 * 96))
+    display.blit(pieces[pawn + 3], (selected[1] * 96, 3 * 96))
+    display.blit(pieces[pawn + 2], (selected[1] * 96, 4 * 96))
+    display.blit(pieces[pawn + 1], (selected[1] * 96, 5 * 96))
+
+    i = int(mouse_pos[1] / 96)
+    j = int(mouse_pos[0] / 96)
+
+    if j == selected[1] and 1 < i < 6:
+        pygame.draw.rect(display, green, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
+
+"""Draws the game end pop-up"""
 def __draw_game_end(display, turn, misc):
     if turn == 0:
         display.blit(misc[6], (0, 4 * 96))

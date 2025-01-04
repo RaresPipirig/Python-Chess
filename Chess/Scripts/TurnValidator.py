@@ -180,7 +180,9 @@ def __navigate_pawn(board, piece_pos, matrix, en_passant):
         if en_passant[turn][y + 1] == 1:  # if en passant is possible
             matrix[x - 1][y + 1] = 3
 
-    """to implement: pawn promotion"""
+    if x == 1: # pawn promotion
+        matrix[x - 1][y] = 1
+        return matrix
 
     if board[x - 1][y] == 0 and not __is_out_of_bounds((x - 1, y)):
         matrix[x- 1][y] = 1
