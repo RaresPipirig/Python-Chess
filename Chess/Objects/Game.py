@@ -127,7 +127,43 @@ class Game:
                 if layout[self.selected[0]][self.selected[1]] % 6 == 1 and (self.selected[0] - i) == 2:
                     self.en_passant[self.turn][8 - j + 1] = 1 # mark it for en passant
 
+                # if the king moves, you cannot perform castling anymore
+                if layout[self.selected[0]][self.selected[1]] % 6 == 0:
+                    self.en_passant[self.turn][0], self.en_passant[self.turn][0] = 1, 1
+
+                    #if the castling is performed on this click
+                    difference = j - self.selected[1]
+                    if difference > 1 or difference < -1:
+                        self.__handle_click_castling((i,j))
+                        return
+
+                # if the rooks move, you cannot perform castling on that side anymore
+                if self.selected == (8, 1):
+                    self.en_passant[self.turn][0] = 1
+                if self.selected == (8, 8):
+                    self.en_passant[self.turn][9] = 1
+
                 self.__make_move((i, j))
+
+    def __handle_click_castling(self, target):
+        i, j = self.selected[0], self.selected[1]
+        board = self.board.get_pieces()
+        piece = board[i][j]
+
+        if j < target[1]: # castling to the right
+            board[i][ j + 2] = piece
+            board[i][j] = 0
+            board[i][j + 1] = piece - 4
+            board[8][8] = 0
+        else: # castling to the left
+            board[i][j - 2] = piece
+            board[i][j] = 0
+            board[i][j - 1] = piece - 4
+            board[8][1] = 0
+
+        self.selected = (0, 0)
+        self.__change_turn()
+
 
     def __handle_click_pawn_promotion(self, mouse_pos, pawn):
         i, j = mouse_pos[0], mouse_pos[1]
@@ -160,7 +196,7 @@ class Game:
         pieces[self.selected[0]][self.selected[1]] = 0
 
         #deselect piece
-        self.selected = (0,0)
+        self.selected = (0, 0)
 
         self.__change_turn()
 

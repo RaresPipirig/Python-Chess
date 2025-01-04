@@ -1,13 +1,13 @@
 import copy
-from subprocess import list2cmdline
 
 """Checks if the player whose turn it is is in check"""
 def is_in_check(turn, board, en_passant):
     king_pos = (0, 0)
     king = 0
+    matrix = __non_destructive_flip(board)
 
     i, j = 0, 0
-    for line in board:
+    for line in matrix:
         for cell in line:
             if cell == (turn * 6 + 6):
                 king_pos = (i, j)
@@ -18,10 +18,10 @@ def is_in_check(turn, board, en_passant):
         j = 0
 
     i, j = 0, 0
-    for line in board:
+    for line in matrix:
         for cell in line:
             if not is_same_color(king, cell) and (cell % 6) != 0:
-                if __checks(board, (i,j), king_pos, en_passant):
+                if __checks(matrix, (i,j), king_pos, en_passant):
                     return True
 
             j += 1
@@ -29,6 +29,13 @@ def is_in_check(turn, board, en_passant):
         j = 0
 
     return False
+
+def __non_destructive_flip(matrix):
+    board_copy = copy.deepcopy(matrix)
+    board_copy = list(zip(*board_copy[::-1]))
+    board_copy = list(zip(*board_copy[::-1]))
+
+    return [list(row) for row in board_copy]
 
 """Returns a list of all valid moves for all the pieces belonging to the player"""
 def get_all_possible_moves(board, turn, en_passant):
@@ -135,12 +142,9 @@ def move_matrix(board, piece_pos, en_passant):
 
     if piece % 6 == 5: # if piece is a queen
         matrix = __navigate_queen(board, piece_pos, matrix)
-
-    """ to implement
     
-    if piece % 6 == 6: #if piece is a king
-        matrix = __navigate_king(board, piece_pos, matrix)
-    """
+    if piece % 6 == 0 and piece != 0: #if piece is a king
+        matrix = __navigate_king(board, piece_pos, matrix, en_passant)
 
     return matrix
 
@@ -357,12 +361,110 @@ def __navigate_queen(board, piece_pos, matrix):
     return matrix
 
 """Returns move matrix for a king at the given position"""
-def __navigate_king(board, piece_pos, matrix):
+def __navigate_king(board, piece_pos, matrix, en_passant):
     x = piece_pos[0]
     y = piece_pos[1]
     piece = board[x][y]
 
+    proximity_matrix = [[-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0]]
+
+    for line in proximity_matrix:
+        i = piece_pos[0] + line[0]
+        j = piece_pos[1] + line[1]
+
+        if (not __is_out_of_bounds((i, j))
+            and not __enemy_king_in_proximity(board, piece, (i,j), proximity_matrix)):
+
+            field = board[i][j]
+            if field == 0:
+                matrix[i][j] = 1
+            elif not is_same_color(piece, field):
+                matrix[i][j] = 2
+
+    if __can_castle_right(board, piece_pos, en_passant):
+        matrix[x][y + 2] = 1
+
+    if __can_castle_left(board, piece_pos, en_passant):
+        matrix[x][y - 2] = 1
+
     return matrix
+
+"""Determines if king can castle on the right side."""
+def __can_castle_right(board, piece_pos, en_passant):
+    if board[piece_pos[0]][piece_pos[1]] < 7:
+        turn = 0
+    else:
+        turn = 1
+
+    # if either the king or rook have moved
+    if en_passant[turn][9] != 0:
+        return False
+
+    # check if the spaces between the king and rook are empty
+    i = piece_pos[1] + 1
+    while i < 8:
+        if board[8][i] != 0:
+            return False
+
+        i += 1
+
+    # check if any of the spaces the king traverses are attacked
+    i = piece_pos[1]
+    while i <= piece_pos[1] + 2:
+        board_copy = copy.deepcopy(board)
+        board_copy[piece_pos[0]][i] = 6
+        board_copy[piece_pos[0]][piece_pos[1]] = 0
+        if is_in_check(turn, board_copy, en_passant):
+            return False
+
+        i += 1
+
+    return True
+
+"""Determines if king can castle on the left side"""
+def __can_castle_left(board, piece_pos, en_passant):
+    if board[piece_pos[0]][piece_pos[1]] < 7:
+        turn = 0
+    else:
+        turn = 1
+
+    # if either the king or rook have moved
+    if en_passant[turn][0] != 0:
+        return False
+
+    # check if the spaces between the king and rook are empty
+    i = piece_pos[1] - 1
+    while i > 1:
+        if board[8][i] != 0:
+            return False
+
+        i -= 1
+
+    # check if any of the spaces the king traverses are attacked
+    i = piece_pos[1]
+    while i >= piece_pos[1] - 2:
+        board_copy = copy.deepcopy(board)
+        board_copy[piece_pos[0]][i] = 6
+        board_copy[piece_pos[0]][piece_pos[1]] = 0
+        if is_in_check(turn, board_copy, en_passant):
+            return False
+
+        i -= 1
+
+    return True
+
+"""Determines if the enemy king is in the proximity of a given field."""
+def __enemy_king_in_proximity(board, king ,pos, proximity_matrix):
+    # go around the given field
+    for line in proximity_matrix:
+        # this function is never called on an out-of-bounds field so this is fine
+        field = board[pos[0] + line[0]][pos[1] + line[1]]
+
+        # if we find the enemy king
+        if field % 6 == 0 and not is_same_color(king, field):
+            return True
+    # we haven't found the enemy king in any of the surrounding fields
+    return False
 
 """Checks if two given pieces are of the same color"""
 def is_same_color(piece_1, piece_2):
