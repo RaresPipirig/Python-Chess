@@ -1,7 +1,8 @@
 import copy
+from subprocess import list2cmdline
 
 """Checks if the player whose turn it is is in check"""
-def is_in_check(turn, board):
+def is_in_check(turn, board, en_passant):
     king_pos = (0, 0)
     king = 0
 
@@ -20,7 +21,7 @@ def is_in_check(turn, board):
     for line in board:
         for cell in line:
             if not is_same_color(king, cell) and (cell % 6) != 0:
-                if __checks(board, (i,j), king_pos):
+                if __checks(board, (i,j), king_pos, en_passant):
                     return True
 
             j += 1
@@ -30,7 +31,7 @@ def is_in_check(turn, board):
     return False
 
 """Returns a list of all valid moves for all the pieces belonging to the player"""
-def get_all_possible_moves(board, turn):
+def get_all_possible_moves(board, turn, en_passant):
     reference = 6 + 6 * turn
     moves = []
 
@@ -38,7 +39,7 @@ def get_all_possible_moves(board, turn):
     for line in board:
         for field in line:
             if field != 0 and is_same_color(reference, field):
-                aux = get_all_valid_moves(board, turn, (i, j))
+                aux = get_all_valid_moves(board, turn, (i, j), en_passant)
                 if len(aux) != 0:
                     moves.append(((i, j), aux))
             j += 1
@@ -48,15 +49,15 @@ def get_all_possible_moves(board, turn):
     return moves
 
 """Returns a list of all valid moves for a given piece"""
-def get_all_valid_moves(board, turn, piece_pos):
-    matrix = move_matrix(board, piece_pos)
+def get_all_valid_moves(board, turn, piece_pos, en_passant):
+    matrix = move_matrix(board, piece_pos, en_passant)
     moves = []
 
     i, j = 0, 0
     for line in matrix:
         for field in line:
             if field != 0:
-                if is_valid_move(board, turn, piece_pos, (i, j)):
+                if is_valid_move(board, turn, piece_pos, (i, j), en_passant):
                     moves.append((i, j))
 
             j += 1
@@ -66,8 +67,8 @@ def get_all_valid_moves(board, turn, piece_pos):
     return moves
 
 """Checks if a given move is valid."""
-def is_valid_move(board, turn, piece_pos, target_pos):
-    matrix = move_matrix(board, piece_pos)
+def is_valid_move(board, turn, piece_pos, target_pos, en_passant):
+    matrix = move_matrix(board, piece_pos, en_passant)
 
     if matrix[target_pos[0]][target_pos[1]] == 0:
         return False # the piece cannot physically move there
@@ -78,22 +79,25 @@ def is_valid_move(board, turn, piece_pos, target_pos):
     board_copy[target_pos[0]][target_pos[1]] = board_copy[piece_pos[0]][piece_pos[1]]
     board_copy[piece_pos[0]][piece_pos[1]] = 0
 
-    if is_in_check(turn, board_copy):
+    if matrix[target_pos[0]][target_pos[1]] == 3:
+        board_copy[target_pos[0] + 1][target_pos[1]] = 0
+
+    if is_in_check(turn, board_copy, en_passant):
         return False
 
     return True
 
 
 """Given a coord on the board, checks if the given piece puts the enemy king in check"""
-def __checks(board, piece_pos, king_pos):
-    matrix = move_matrix(board, piece_pos)
+def __checks(board, piece_pos, king_pos, en_passant):
+    matrix = move_matrix(board, piece_pos, en_passant)
     if matrix[king_pos[0]][king_pos[1]] != 0:
         return True
 
     return False
 
 """Given the coord of a piece on the board, checks all places a piece can move including by capturing"""
-def move_matrix(board, piece_pos):
+def move_matrix(board, piece_pos, en_passant):
     # initialise empty move matrix
     matrix = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -118,7 +122,7 @@ def move_matrix(board, piece_pos):
         return matrix
 
     if piece % 6 == 1: # if piece is a pawn
-        matrix = __navigate_pawn(board, piece_pos, matrix)
+        matrix = __navigate_pawn(board, piece_pos, matrix, en_passant)
 
     if piece % 6 == 2: # if piece is a rook
         matrix = __navigate_rook(board, piece_pos, matrix)
@@ -143,7 +147,7 @@ def move_matrix(board, piece_pos):
 
 
 """Returns move matrix for a pawn at the given position"""
-def __navigate_pawn(board, piece_pos, matrix):
+def __navigate_pawn(board, piece_pos, matrix, en_passant):
     x = piece_pos[0]
     y = piece_pos[1]
     piece = board[x][y]
@@ -154,7 +158,27 @@ def __navigate_pawn(board, piece_pos, matrix):
     if board[x - 1][y + 1] != 0 and not is_same_color(piece, board[x - 1][y + 1]):
         matrix[x - 1][y + 1] = 2
 
-    """to implement: en passant"""
+    target = board[x][y - 1]
+    # if there is an enemy pawn to the left
+    if x == 4 and target % 6 == 1 and not is_same_color(piece, target):
+        if target < 7:
+            turn = 0
+        else:
+            turn = 1
+
+        if en_passant[turn][y - 1] == 1: # if en passant is possible
+            matrix[x - 1][y - 1] = 3
+
+    target = board[x][y + 1]
+    # if there is an enemy pawn to the right
+    if x == 4 and target % 6 == 1 and not is_same_color(piece, target):
+        if target < 7:
+            turn = 0
+        else:
+            turn = 1
+
+        if en_passant[turn][y + 1] == 1:  # if en passant is possible
+            matrix[x - 1][y + 1] = 3
 
     """to implement: pawn promotion"""
 

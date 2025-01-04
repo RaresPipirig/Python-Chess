@@ -69,16 +69,16 @@ def load_assets():
     return pieces, index, misc
 
 """Draws the game board upon being given a game state"""
-def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected):
+def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected, en_passant):
     __draw_game_board(board, display, index)
-    __draw_gameplay_elements(board, display, pieces, misc, turn)
+    __draw_gameplay_elements(board, display, pieces, misc, turn, en_passant)
 
     # if the game has ended, don't draw the mouse interaction
-    if (is_in_check(turn, board.get_pieces())
-        and len(get_all_possible_moves(board.get_pieces(), turn)) == 0):
+    if (is_in_check(turn, board.get_pieces(), en_passant)
+        and len(get_all_possible_moves(board.get_pieces(), turn, en_passant)) == 0):
             __draw_game_end(display, turn, misc)
     else:
-        __draw_mouse_interaction(board, display, turn, mouse_pos, selected)
+        __draw_mouse_interaction(board, display, turn, mouse_pos, selected, en_passant)
 
     """tests"""
     #__draw_matrix(board, display)
@@ -93,7 +93,7 @@ def __draw_game_end(display, turn, misc):
         display.blit(misc[5], (0, 4 * 96))
 
 """Makes the GUI interactive with the mouse"""
-def __draw_mouse_interaction(board, display, turn, mouse_pos, selected):
+def __draw_mouse_interaction(board, display, turn, mouse_pos, selected, en_passant):
     reference = 6 + turn * 6
     green = (106, 252, 143)
     red = (252, 106, 130)
@@ -110,7 +110,7 @@ def __draw_mouse_interaction(board, display, turn, mouse_pos, selected):
     # if there is a piece that belongs to the player and isn't selected
     if field != 0 and is_same_color(reference, field) and (i, j) != selected:
         # if the piece has valid moves
-        if len(get_all_valid_moves(layout, turn, (i, j))) != 0:
+        if len(get_all_valid_moves(layout, turn, (i, j), en_passant)) != 0:
             pygame.draw.rect(display, green, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
         # if the piece has no valid moves
         else:
@@ -118,11 +118,11 @@ def __draw_mouse_interaction(board, display, turn, mouse_pos, selected):
 
     # if a piece is selected
     if selected != (0,0):
-        matrix = move_matrix(layout, selected)
+        matrix = move_matrix(layout, selected, en_passant)
 
         field = matrix[i][j]
         if field != 0: # if the selected piece can move to the field under the cursor
-            if is_valid_move(layout, turn, selected, (i,j)):
+            if is_valid_move(layout, turn, selected, (i,j), en_passant):
                 if field == 1: # move normally
                     pygame.draw.rect(display, green, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
                 else: # move by capturing
@@ -171,7 +171,7 @@ def __draw_game_board(board, display, index):
 Chess pieces
 Turn indicator
 """
-def __draw_gameplay_elements(board, display, pieces, misc, turn):
+def __draw_gameplay_elements(board, display, pieces, misc, turn, en_passant):
     # drawing the pieces
     layout = board.get_layout()
     i, j = 0, 0
@@ -184,21 +184,21 @@ def __draw_gameplay_elements(board, display, pieces, misc, turn):
         j = 0
 
     # drawing player turn
-    if not (is_in_check(turn, board.get_pieces())
-            and len(get_all_possible_moves(board.get_pieces(), turn)) == 0):
+    if not (is_in_check(turn, board.get_pieces(), en_passant)
+            and len(get_all_possible_moves(board.get_pieces(), turn, en_passant)) == 0):
                 display.blit(misc[turn], (0, 0))
 
-    if is_in_check(turn, board.get_pieces()):
-        if len(get_all_possible_moves(board.get_pieces(), turn)) == 0:
+    if is_in_check(turn, board.get_pieces(), en_passant):
+        if len(get_all_possible_moves(board.get_pieces(), turn, en_passant)) == 0:
             display.blit(misc[4], (9 * 96, 0))
         else:
             display.blit(misc[3], (9 * 96, 0))
 
 """Test function"""
-def __draw_matrix(board, display):
+def __draw_matrix(board, display, en_passant):
     i, j = 0, 0
     game_board = board.get_pieces()
-    layout = move_matrix(game_board, (8, 7))
+    layout = move_matrix(game_board, (8, 7), en_passant)
     for lines in layout:
         for fields in lines:
             if layout[i][j] == 1:

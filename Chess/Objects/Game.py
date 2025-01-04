@@ -15,6 +15,9 @@ class Game:
         self.turn = 0
         self.selected = (0,0)
         self.down_press = (0,0)
+        # slots 1 -> 8 keep track of en passant
+        # slots 0 and 9 keep track for castling
+        self.en_passant = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
     """Saves the state of the current game in a file"""
     def __save_state(self):
@@ -84,7 +87,7 @@ class Game:
 
 
 
-            draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos, self.selected)
+            draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos, self.selected, self.en_passant)
             pygame.display.update()
             clock.tick(FPS)
 
@@ -98,11 +101,11 @@ class Game:
         # if I click on a piece that is mine and isn't the selected piece
         if field != 0 and is_same_color(reference, field) and (i, j) != self.selected:
             # if the piece has valid moves
-            if len(get_all_valid_moves(layout, self.turn, (i, j))) != 0:
+            if len(get_all_valid_moves(layout, self.turn, (i, j), self.en_passant)) != 0:
                 self.selected = (i, j)
 
         if self.selected != (0,0):
-            matrix = move_matrix(layout, self.selected)
+            matrix = move_matrix(layout, self.selected, self.en_passant)
 
             # if I click on a place that isn't somewhere the selected piece can move
             if matrix[i][j] == 0:
@@ -112,7 +115,14 @@ class Game:
                 ):
                     self.selected = (0,0) # deselect piece
             # if I click on a VALID place the piece can move
-            elif is_valid_move(layout, self.turn, self.selected, (i, j)):
+            elif is_valid_move(layout, self.turn, self.selected, (i, j), self.en_passant):
+                if matrix[i][j] == 3:
+                    self.board.get_pieces()[i + 1][j] = 0 # execute en passant
+
+                # if the piece is a pawn and it moves 2 spaces
+                if layout[self.selected[0]][self.selected[1]] % 6 == 1 and (self.selected[0] - i) == 2:
+                    self.en_passant[self.turn][8 - j + 1] = 1 # mark it for en passant
+
                 self.__make_move((i, j))
 
     """Moves selected piece to target_pos
@@ -136,6 +146,9 @@ class Game:
         self.board.pieces = self.board.get_flipped_board()
         self.board.height.reverse()
         self.board.width.reverse()
+
+        for i in range(1,9):
+          self.en_passant[self.turn][i] = 0
 
     """Loads a game state into self from a game state file"""
     def __read_game_state(self, path):
