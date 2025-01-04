@@ -1,6 +1,7 @@
 from Objects.Board import Board
 from Scripts.GUIController import *
 from Scripts.TurnValidator import *
+from Scripts.FunkyLittleComputer import FunkyLittleComputer
 
 """Class for managing all game logic"""
 class Game:
@@ -18,6 +19,7 @@ class Game:
         # slots 1 -> 8 keep track of en passant
         # slots 0 and 9 keep track for castling
         self.en_passant = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        self.computer = FunkyLittleComputer()
 
     """Saves the state of the current game in a file"""
     def __save_state(self):
@@ -62,6 +64,13 @@ class Game:
         # main game loop
         while True:
             mouse_pos = pygame.mouse.get_pos()
+
+            if self.turn == 1:
+                move = self.computer.select_a_move(self.board.get_pieces(), self.turn, self.en_passant)
+
+                if move != 0:
+                    self.selected = move[0]
+                    self.__make_move(move[1])
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -146,29 +155,6 @@ class Game:
                     self.selected = (0,0) # deselect piece
             # if I click on a VALID place the piece can move
             elif is_valid_move(layout, self.turn, self.selected, (i, j), self.en_passant):
-                if matrix[i][j] == 3:
-                    self.board.get_pieces()[i + 1][j] = 0 # execute en passant
-
-                # if the piece is a pawn and it moves 2 spaces
-                if layout[self.selected[0]][self.selected[1]] % 6 == 1 and (self.selected[0] - i) == 2:
-                    self.en_passant[self.turn][8 - j + 1] = 1 # mark it for en passant
-
-                # if the king moves, you cannot perform castling anymore
-                if layout[self.selected[0]][self.selected[1]] % 6 == 0:
-                    self.en_passant[self.turn][0], self.en_passant[self.turn][0] = 1, 1
-
-                    #if the castling is performed on this click
-                    difference = j - self.selected[1]
-                    if difference > 1 or difference < -1:
-                        self.__handle_click_castling((i,j))
-                        return
-
-                # if the rooks move, you cannot perform castling on that side anymore
-                if self.selected == (8, 1):
-                    self.en_passant[self.turn][0] = 1
-                if self.selected == (8, 8):
-                    self.en_passant[self.turn][9] = 1
-
                 self.__make_move((i, j))
 
     def __handle_click_castling(self, target):
@@ -215,6 +201,36 @@ class Game:
     This function is only called after the move has been validated.
     """
     def __make_move(self, target_pos):
+        i, j = target_pos[0], target_pos[1]
+
+        layout = self.board.get_pieces()
+
+        matrix = move_matrix(layout, self.selected, self.en_passant)
+
+        if matrix[i][j] == 3:
+            self.board.get_pieces()[i + 1][j] = 0  # execute en passant
+
+        # if the piece is a pawn and it moves 2 spaces
+        if layout[self.selected[0]][self.selected[1]] % 6 == 1 and (self.selected[0] - i) == 2:
+            self.en_passant[self.turn][8 - j + 1] = 1  # mark it for en passant
+
+        # if the king moves, you cannot perform castling anymore
+        if layout[self.selected[0]][self.selected[1]] % 6 == 0:
+            self.en_passant[self.turn][0], self.en_passant[self.turn][0] = 1, 1
+
+            # if the castling is performed on this click
+            difference = j - self.selected[1]
+            if difference > 1 or difference < -1:
+                self.__handle_click_castling((i, j))
+                return
+
+        # if the rooks move, you cannot perform castling on that side anymore
+        if self.selected == (8, 1):
+            self.en_passant[self.turn][0] = 1
+        if self.selected == (8, 8):
+            self.en_passant[self.turn][9] = 1
+
+
         pieces = self.board.get_pieces()
 
         # make the move itself
