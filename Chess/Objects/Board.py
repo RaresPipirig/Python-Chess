@@ -19,12 +19,9 @@ class Board:
     black king - 12
     """
 
-    def __init__(self, state=None):
+    def __init__(self):
         self.__init_layout()
-        if state is None:
-            self.__init_pieces_start() # setup for game start
-        else:
-            self.__init_pieces(state) # setup for given game state
+        self.__init_pieces_start() # setup for game start
 
 
     """Sets up the layout of the board
@@ -63,6 +60,18 @@ class Board:
                        [0, 2, 3, 4, 5, 6, 4, 3, 2, 0],
                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
+        # stalemate test
+        """self.pieces = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 8, 9, 10, 11, 12, 10, 9, 8, 0],
+                       [0, 7, 7, 7, 7, 7, 7, 7, 7, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 11, 0, 8, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 6, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]"""
+
     def get_flipped_board(self):
         board_copy = copy.deepcopy(self.pieces)
         board_copy = list(zip(*board_copy[::-1]))
@@ -70,9 +79,7 @@ class Board:
 
         return [list(row) for row in board_copy]
 
-    """Setup pieces for a given game state"""
-    def __init_pieces(self, state):
-        self.pieces = state
+    """Getters"""
 
     def get_layout(self):
         return self.layout

@@ -21,16 +21,6 @@ class Game:
         self.en_passant = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
         self.computer = FunkyLittleComputer()
 
-    """Saves the state of the current game in a file"""
-    def __save_state(self):
-        # to implement
-        return
-
-    """Loads the state of a game given a file path """
-    def __load_state(self, path):
-        # to implement
-        return
-
     """Determines the type of game based on arguments and starts it"""
     def start(self, arg):
         display, clock, FPS = setup_display()
@@ -41,20 +31,6 @@ class Game:
         if arg == "player":
             self.__run_2_player(display, clock, FPS)
             return
-
-        # we should only reach here if the VALID argument is a path to a game state file
-        """
-        try:
-            self.__read_game_state(arg)
-            game_type = self.__choose_game_type() # the user is prompted to choose an opponent type
-            if game_type == "computer":
-                self.__run_1_player(display, clock, FPS)
-            else:
-                self.__run_2_player(display, clock, FPS)
-        except Exception as err:
-            print("An exception occurred when loading the game save:")
-            print(Exception)
-        """
 
 
     """Runs the 1 player game until the end or until stopped"""
@@ -68,9 +44,16 @@ class Game:
             if self.turn == 1:
                 move = self.computer.select_a_move(self.board.get_pieces(), self.turn, self.en_passant)
 
+                # don't draw the frame where the computer makes a move
                 if move != 0:
                     self.selected = move[0]
                     self.__make_move(move[1])
+                # draw the end of game screen if you win
+                else:
+                    draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos, self.selected,
+                               self.en_passant)
+                    pygame.display.update()
+                    clock.tick(FPS)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -90,9 +73,10 @@ class Game:
                     else:
                         self.down_press = (0, 0)
 
-            draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos, self.selected, self.en_passant)
-            pygame.display.update()
-            clock.tick(FPS)
+            if self.turn == 0:
+                draw_board(pieces, index, misc, display, self.board, self.turn, mouse_pos, self.selected, self.en_passant)
+                pygame.display.update()
+                clock.tick(FPS)
 
     """Runs the 2 player game until the end or until stopped"""
     def __run_2_player(self, display, clock, FPS):
@@ -126,6 +110,7 @@ class Game:
             pygame.display.update()
             clock.tick(FPS)
 
+    """Event handler for mouse click"""
     def __handle_MOUSEBUTTONUP(self, mouse_pos):
         reference = 6 + self.turn * 6
         layout = self.board.get_pieces()
@@ -133,6 +118,7 @@ class Game:
         j = int(mouse_pos[0] / 96)
         field = layout[i][j]
 
+        # checks selected piece for pawn promotion
         if layout[self.selected[0]][self.selected[1]] % 6 == 1 and self.selected[0] == 1:
             self.__handle_click_pawn_promotion((i, j), layout[self.selected[0]][self.selected[1]])
             return
@@ -143,6 +129,7 @@ class Game:
             if len(get_all_valid_moves(layout, self.turn, (i, j), self.en_passant)) != 0:
                 self.selected = (i, j)
 
+        # if a piece is already selected
         if self.selected != (0,0):
             matrix = move_matrix(layout, self.selected, self.en_passant)
 
@@ -157,6 +144,7 @@ class Game:
             elif is_valid_move(layout, self.turn, self.selected, (i, j), self.en_passant):
                 self.__make_move((i, j))
 
+    """Particular click event handling for castling"""
     def __handle_click_castling(self, target):
         i, j = self.selected[0], self.selected[1]
         board = self.board.get_pieces()
@@ -176,7 +164,7 @@ class Game:
         self.selected = (0, 0)
         self.__change_turn()
 
-
+    """Particular click event handling for pawn promotion"""
     def __handle_click_pawn_promotion(self, mouse_pos, pawn):
         i, j = mouse_pos[0], mouse_pos[1]
 
@@ -208,27 +196,27 @@ class Game:
         matrix = move_matrix(layout, self.selected, self.en_passant)
 
         if matrix[i][j] == 3:
-            self.board.get_pieces()[i + 1][j] = 0  # execute en passant
+            layout[i + 1][j] = 0  # execute en passant
 
         # if the piece is a pawn and it moves 2 spaces
         if layout[self.selected[0]][self.selected[1]] % 6 == 1 and (self.selected[0] - i) == 2:
             self.en_passant[self.turn][8 - j + 1] = 1  # mark it for en passant
-
-        # if the king moves, you cannot perform castling anymore
-        if layout[self.selected[0]][self.selected[1]] % 6 == 0:
-            self.en_passant[self.turn][0], self.en_passant[self.turn][0] = 1, 1
-
-            # if the castling is performed on this click
-            difference = j - self.selected[1]
-            if difference > 1 or difference < -1:
-                self.__handle_click_castling((i, j))
-                return
 
         # if the rooks move, you cannot perform castling on that side anymore
         if self.selected == (8, 1):
             self.en_passant[self.turn][0] = 1
         if self.selected == (8, 8):
             self.en_passant[self.turn][9] = 1
+
+        # if the king moves, you cannot perform castling anymore
+        if layout[self.selected[0]][self.selected[1]] % 6 == 0:
+            self.en_passant[self.turn][0], self.en_passant[self.turn][9] = 1, 1
+
+            # if the castling is performed on this click
+            difference = j - self.selected[1]
+            if difference > 1 or difference < -1:
+                self.__handle_click_castling((i, j))
+                return
 
 
         pieces = self.board.get_pieces()
@@ -244,23 +232,12 @@ class Game:
 
     """Changes the turn to the other player"""
     def __change_turn(self):
-        self.turn = (self.turn + 1) % 2
-        self.board.pieces = self.board.get_flipped_board()
+        self.turn = (self.turn + 1) % 2 # turn indicator
+        self.board.pieces = self.board.get_flipped_board() # flip the board
+        # index flip
         self.board.height.reverse()
         self.board.width.reverse()
 
+        # you can only perform en passant in the turn immediately after a pawn has moved 2 spaces
         for i in range(1,9):
           self.en_passant[self.turn][i] = 0
-
-    """Loads a game state into self from a game state file"""
-    def __read_game_state(self, path):
-        # to implement
-        pass
-
-    """The used is prompted to choose an opponent type
-    Returns either "computer" (1 player game) 
-    or "player" (2 player game)
-    """
-    def __choose_game_type(self):
-        # to implement
-        return "computer"

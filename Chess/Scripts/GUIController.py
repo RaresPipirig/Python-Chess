@@ -2,7 +2,7 @@ import pygame
 from Scripts.TurnValidator import move_matrix, is_in_check, is_valid_move, get_all_valid_moves, get_all_possible_moves, \
     is_same_color
 
-"""Functions for handling all GUI operations"""
+"""Script for handling all GUI operations"""
 
 """Sets up the display window upon opening the game"""
 def setup_display():
@@ -63,7 +63,8 @@ def load_assets():
         3 : pygame.transform.scale(pygame.image.load("Assets/check.png"), (96,960)),
         4 : pygame.transform.scale(pygame.image.load("Assets/mate.png"), (96,960)),
         5 : pygame.transform.scale(pygame.image.load("Assets/white_wins.png"), (960,192)),
-        6 : pygame.transform.scale(pygame.image.load("Assets/black_wins.png"), (960,192))
+        6 : pygame.transform.scale(pygame.image.load("Assets/black_wins.png"), (960,192)),
+        7 : pygame.transform.scale(pygame.image.load("Assets/stalemate.png"), (960,192))
     }
 
     return pieces, index, misc
@@ -76,7 +77,9 @@ def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected, e
     # if the game has ended, don't draw the mouse interaction
     if (is_in_check(turn, board.get_pieces(), en_passant)
         and len(get_all_possible_moves(board.get_pieces(), turn, en_passant)) == 0):
-            __draw_game_end(display, turn, misc)
+            __draw_game_end(display, turn, misc) # check mate
+    elif len(get_all_possible_moves(board.get_pieces(), turn, en_passant)) == 0:
+        display.blit(misc[7], (0, 4 * 96)) # stalemate
     # if the selected piece is a pawn on promotion
     elif board.get_pieces()[selected[0]][selected[1]] % 6 == 1 and selected[0] == 1:
         # custom interaction
@@ -86,6 +89,7 @@ def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected, e
                                      selected,
                                      board.get_pieces()[selected[0]][selected[1]])
     else:
+        # normal mouse interaction
         __draw_mouse_interaction(board, display, turn, mouse_pos, selected, en_passant)
 
     """tests"""
@@ -94,6 +98,7 @@ def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected, e
     #print(get_all_valid_moves(board.get_pieces(), turn, (8, 2)))
     #print(get_all_possible_moves(board.get_pieces(), turn))
 
+"""Custom mouse/GUI interaction for selecting a piece on pawn promotion"""
 def __pawn_promotion_interaction(display, mouse_pos, pieces, selected, pawn):
     yellow = (252, 237, 106)
     green = (106, 252, 143)
@@ -224,7 +229,9 @@ def __draw_gameplay_elements(board, display, pieces, misc, turn, en_passant):
         else:
             display.blit(misc[3], (9 * 96, 0))
 
-"""Test function"""
+"""Test function
+Draws the movement matrix for a given piece
+"""
 def __draw_matrix(board, display, en_passant):
     i, j = 0, 0
     game_board = board.get_pieces()

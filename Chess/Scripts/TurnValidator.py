@@ -1,11 +1,14 @@
 import copy
 
+"""Script for handling all move validation"""
+
 """Checks if the player whose turn it is is in check"""
 def is_in_check(turn, board, en_passant):
     king_pos = (0, 0)
     king = 0
     matrix = __non_destructive_flip(board)
 
+    # get the position of the king
     i, j = 0, 0
     for line in matrix:
         for cell in line:
@@ -17,6 +20,7 @@ def is_in_check(turn, board, en_passant):
         i+= 1
         j = 0
 
+    # for each enemy piece, check if it puts the king in check
     i, j = 0, 0
     for line in matrix:
         for cell in line:
@@ -30,6 +34,7 @@ def is_in_check(turn, board, en_passant):
 
     return False
 
+"""Function for safely rotating a matrix 180 degrees"""
 def __non_destructive_flip(matrix):
     board_copy = copy.deepcopy(matrix)
     board_copy = list(zip(*board_copy[::-1]))
@@ -119,8 +124,6 @@ def move_matrix(board, piece_pos, en_passant):
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ]
 
-    #piece_pos = tuple(reversed(piece_pos))
-
     x = piece_pos[0]
     y = piece_pos[1]
     piece = board[x][y]
@@ -203,6 +206,8 @@ def __navigate_rook(board, piece_pos, matrix):
     x = piece_pos[0]
     y = piece_pos[1]
     piece = board[x][y]
+
+    # could have been implemented in a cleaner way
 
     i = 1
     while not __is_out_of_bounds((x + i, y)):
@@ -368,6 +373,7 @@ def __navigate_king(board, piece_pos, matrix, en_passant):
 
     proximity_matrix = [[-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0]]
 
+    # check all fields in the proximity of the king
     for line in proximity_matrix:
         i = piece_pos[0] + line[0]
         j = piece_pos[1] + line[1]

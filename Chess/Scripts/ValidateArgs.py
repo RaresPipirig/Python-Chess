@@ -3,7 +3,6 @@
 returns 0 if invalid args
 returns 1 if 1 player game
 returns 2 if 2 player game
-returns 3 for loading a previous game state
 """
 def validate_args(args):
     if len(args) != 2:
@@ -13,7 +12,5 @@ def validate_args(args):
         return 1
     elif args[1] == "player":
         return 2
-    #elif args[1] is a valid path to a game state file
-    #   return 3
 
     return 0 #invalid argument
