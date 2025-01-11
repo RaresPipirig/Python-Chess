@@ -2,7 +2,17 @@ import copy
 
 """Script for handling all move validation"""
 
-"""Checks if the player whose turn it is is in check"""
+"""
+Checks if the player whose turn it is is in check.
+
+Args:
+    turn (int): Indicates which player makes the next move.
+    board (list): Matrix which contains the layout of the game pieces.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    bool: If the player is in check or not.
+"""
 def is_in_check(turn, board, en_passant):
     king_pos = (0, 0)
     king = 0
@@ -34,7 +44,15 @@ def is_in_check(turn, board, en_passant):
 
     return False
 
-"""Function for safely rotating a matrix 180 degrees"""
+"""
+Function for safely rotating a matrix 180 degrees
+
+Args:
+    matrix (list): The matrix.
+    
+Returns:
+    list: The rotated matrix.
+"""
 def __non_destructive_flip(matrix):
     board_copy = copy.deepcopy(matrix)
     board_copy = list(zip(*board_copy[::-1]))
@@ -42,7 +60,17 @@ def __non_destructive_flip(matrix):
 
     return [list(row) for row in board_copy]
 
-"""Returns a list of all valid moves for all the pieces belonging to the player"""
+"""
+Returns a list of all valid moves for all the pieces belonging to the player.
+
+Args:
+    turn (int): Indicates which player makes the next move.
+    board (list): Matrix which contains the layout of the game pieces.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    list: All possible moves a player can make.
+"""
 def get_all_possible_moves(board, turn, en_passant):
     reference = 6 + 6 * turn
     moves = []
@@ -60,7 +88,18 @@ def get_all_possible_moves(board, turn, en_passant):
 
     return moves
 
-"""Returns a list of all valid moves for a given piece"""
+"""
+Returns a list of all valid moves for a given piece.
+
+Args:
+    turn (int): Indicates which player makes the next move.
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    list: All possible moves the piece can make.
+"""
 def get_all_valid_moves(board, turn, piece_pos, en_passant):
     matrix = move_matrix(board, piece_pos, en_passant)
     moves = []
@@ -78,7 +117,19 @@ def get_all_valid_moves(board, turn, piece_pos, en_passant):
 
     return moves
 
-"""Checks if a given move is valid."""
+"""
+Checks if a given move is valid.
+
+Args:
+    turn (int): Indicates which player makes the next move.
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    target_pos (tuple): The place where the piece is supposed to move.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    bool: If the move is valid.
+"""
 def is_valid_move(board, turn, piece_pos, target_pos, en_passant):
     matrix = move_matrix(board, piece_pos, en_passant)
 
@@ -100,7 +151,18 @@ def is_valid_move(board, turn, piece_pos, target_pos, en_passant):
     return True
 
 
-"""Given a coord on the board, checks if the given piece puts the enemy king in check"""
+"""
+Given a coord on the board, checks if the given piece puts the enemy king in check.
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    king_pos (tuple): The position of the king.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    bool: If the given piece puts the king in check.
+"""
 def __checks(board, piece_pos, king_pos, en_passant):
     matrix = move_matrix(board, piece_pos, en_passant)
     if matrix[king_pos[0]][king_pos[1]] != 0:
@@ -108,7 +170,17 @@ def __checks(board, piece_pos, king_pos, en_passant):
 
     return False
 
-"""Given the coord of a piece on the board, checks all places a piece can move including by capturing"""
+"""
+Given the coord of a piece on the board, checks all places a piece can move including by capturing.
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    list: Movement matrix of the given piece.
+"""
 def move_matrix(board, piece_pos, en_passant):
     # initialise empty move matrix
     matrix = [
@@ -153,7 +225,18 @@ def move_matrix(board, piece_pos, en_passant):
 
 
 
-"""Returns move matrix for a pawn at the given position"""
+"""
+Returns move matrix for a pawn at the given position
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    matrix (list): The already initialised empty move matrix.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    list: Movement matrix of the pawn.
+"""
 def __navigate_pawn(board, piece_pos, matrix, en_passant):
     x = piece_pos[0]
     y = piece_pos[1]
@@ -201,7 +284,17 @@ def __navigate_pawn(board, piece_pos, matrix, en_passant):
 
     return matrix
 
-"""Returns move matrix for a rook at the given position"""
+"""
+Returns move matrix for a rook at the given position.
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    matrix (list): The already initialised empty move matrix.
+    
+Returns:
+    list: Movement matrix of the rook.
+"""
 def __navigate_rook(board, piece_pos, matrix):
     x = piece_pos[0]
     y = piece_pos[1]
@@ -267,7 +360,17 @@ def __navigate_rook(board, piece_pos, matrix):
 
     return matrix
 
-"""Returns move matrix for a knight at the given position"""
+"""
+Returns move matrix for a knight at the given position.
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    matrix (list): The already initialised empty move matrix.
+    
+Returns:
+    list: Movement matrix of the knight.
+"""
 def __navigate_knight(board, piece_pos, matrix):
     x = piece_pos[0]
     y = piece_pos[1]
@@ -294,7 +397,17 @@ def __navigate_knight(board, piece_pos, matrix):
 
     return matrix
 
-"""Returns move matrix for a bishop at the given position"""
+"""
+Returns move matrix for a bishop at the given position.
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    matrix (list): The already initialised empty move matrix.
+    
+Returns:
+    list: Movement matrix of the bishop.
+"""
 def __navigate_bishop(board, piece_pos, matrix):
     x = piece_pos[0]
     y = piece_pos[1]
@@ -358,14 +471,35 @@ def __navigate_bishop(board, piece_pos, matrix):
 
     return matrix
 
-"""Returns move matrix for a queen at the given position"""
+"""
+Returns move matrix for a queen at the given position.
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    matrix (list): The already initialised empty move matrix.
+    
+Returns:
+    list: Movement matrix of the queen.
+"""
 def __navigate_queen(board, piece_pos, matrix):
     matrix = __navigate_rook(board, piece_pos, matrix)
     matrix = __navigate_bishop(board, piece_pos, matrix)
 
     return matrix
 
-"""Returns move matrix for a king at the given position"""
+"""
+Returns move matrix for a king at the given position
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    matrix (list): The already initialised empty move matrix.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    list: Movement matrix of the king.
+"""
 def __navigate_king(board, piece_pos, matrix, en_passant):
     x = piece_pos[0]
     y = piece_pos[1]
@@ -395,7 +529,17 @@ def __navigate_king(board, piece_pos, matrix, en_passant):
 
     return matrix
 
-"""Determines if king can castle on the right side."""
+"""
+Determines if king can castle on the right side.
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    bool: If the king can castle on the right side.
+"""
 def __can_castle_right(board, piece_pos, en_passant):
     if board[piece_pos[0]][piece_pos[1]] < 7:
         turn = 0
@@ -427,7 +571,17 @@ def __can_castle_right(board, piece_pos, en_passant):
 
     return True
 
-"""Determines if king can castle on the left side"""
+"""
+Determines if king can castle on the left side.
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    piece_pos (tuple): The position of a piece on the board.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+    
+Returns:
+    bool: If the king can castle on the left side.
+"""
 def __can_castle_left(board, piece_pos, en_passant):
     if board[piece_pos[0]][piece_pos[1]] < 7:
         turn = 0
@@ -459,7 +613,18 @@ def __can_castle_left(board, piece_pos, en_passant):
 
     return True
 
-"""Determines if the enemy king is in the proximity of a given field."""
+"""
+Determines if the enemy king is in the proximity of a given field.
+
+Args:
+    board (list): Matrix which contains the layout of the game pieces.
+    king (int): Value of the king piece.
+    pos (tuple): A field on the board.
+    proximity_matrix (list): Movement matrix for going around the given field.
+    
+Returns:
+    bool: If the enemy king is in the proximity of the given field.
+"""
 def __enemy_king_in_proximity(board, king ,pos, proximity_matrix):
 
     # go around the given field
@@ -473,14 +638,31 @@ def __enemy_king_in_proximity(board, king ,pos, proximity_matrix):
     # we haven't found the enemy king in any of the surrounding fields
     return False
 
-"""Checks if two given pieces are of the same color"""
+"""
+Checks if two given pieces are of the same color.
+
+Args:
+    piece_1 (int): Value of a given piece.
+    piece_2 (int): Value of another given peice.
+    
+Returns:
+    bool: If the pieces are the same color.
+"""
 def is_same_color(piece_1, piece_2):
     if (piece_1 < 7 and piece_2 < 7) or (piece_1 >= 7 and piece_2 >= 7):
         return True
 
     return False
 
-"""Determines if given coordinates are out of bounds"""
+"""
+Determines if given coordinates are out of bounds.
+
+Args:
+    coord (tuple): Coordinates on or off the game board.
+    
+Returns:
+    bool: If the given coordinates are within the bounds of the game board.
+"""
 def __is_out_of_bounds(coord):
     x = coord[0]
     y = coord[1]

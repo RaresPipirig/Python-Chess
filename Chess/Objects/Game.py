@@ -3,13 +3,14 @@ from Scripts.GUIController import *
 from Scripts.TurnValidator import *
 from Scripts.FunkyLittleComputer import FunkyLittleComputer
 
-"""Class for managing all game logic"""
-class Game:
-    """Turn conventions:
+"""
+Class for managing all game logic.
+
+Turn conventions:
     white - 0
     black - 1
-    """
-
+"""
+class Game:
     """Setup new game"""
     def __init__(self):
         self.board = Board()
@@ -21,7 +22,12 @@ class Game:
         self.en_passant = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
         self.computer = FunkyLittleComputer()
 
-    """Determines the type of game based on arguments and starts it"""
+    """
+    Determines the type of game based on arguments and starts it.
+    
+    Args:
+        arg (str): String containing a valid command line argument.
+    """
     def start(self, arg):
         display, clock, FPS = setup_display()
 
@@ -33,7 +39,14 @@ class Game:
             return
 
 
-    """Runs the 1 player game until the end or until stopped"""
+    """
+    Runs the game cycle of the single player game.
+    
+    Args:
+        display (Surface): Pygame object which represents the display itself.
+        clock (Clock): Pygame object which regulates the FPS of the game.
+        FPS (int): The framerate the game runs at.
+    """
     def __run_1_player(self, display, clock, FPS):
         pieces, index, misc = load_assets()
 
@@ -78,7 +91,14 @@ class Game:
                 pygame.display.update()
                 clock.tick(FPS)
 
-    """Runs the 2 player game until the end or until stopped"""
+    """
+    Runs the game cycle of the 2 players game.
+    
+    Args:
+        display (Surface): Pygame object which represents the display itself.
+        clock (Clock): Pygame object which regulates the FPS of the game.
+        FPS (int): The framerate the game runs at.
+    """
     def __run_2_player(self, display, clock, FPS):
         pieces, index, misc = load_assets()
 
@@ -110,10 +130,16 @@ class Game:
             pygame.display.update()
             clock.tick(FPS)
 
-    """Event handler for mouse click"""
+    """
+    Event handler for mouse click.
+    
+    Args:
+        mouse_pos (tuple): The position of the mouse at the moment of the click.
+    """
     def __handle_MOUSEBUTTONUP(self, mouse_pos):
         reference = 6 + self.turn * 6
         layout = self.board.get_pieces()
+        # the coords of the tile the mouse click is on
         i = int(mouse_pos[1] / 96)
         j = int(mouse_pos[0] / 96)
         field = layout[i][j]
@@ -144,7 +170,12 @@ class Game:
             elif is_valid_move(layout, self.turn, self.selected, (i, j), self.en_passant):
                 self.__make_move((i, j))
 
-    """Particular click event handling for castling"""
+    """
+    Particular click event handling for castling.
+    
+    Args:
+        target (tuple): The coords of the tile on which the click was performed.
+    """
     def __handle_click_castling(self, target):
         i, j = self.selected[0], self.selected[1]
         board = self.board.get_pieces()
@@ -164,7 +195,13 @@ class Game:
         self.selected = (0, 0)
         self.__change_turn()
 
-    """Particular click event handling for pawn promotion"""
+    """
+    Particular click event handling for pawn promotion.
+    
+    Args:
+        mouse_pos (tuple): The coords of the tile on which the click was performed.
+        pawn (int): The value of the pawn which performs the promotion.
+    """
     def __handle_click_pawn_promotion(self, mouse_pos, pawn):
         i, j = mouse_pos[0], mouse_pos[1]
 
@@ -185,8 +222,11 @@ class Game:
             self.__change_turn()
 
 
-    """Moves selected piece to target_pos
-    This function is only called after the move has been validated.
+    """
+    Performs a move.
+    
+    Args:
+        target_pos (tuple): The coords of the tile onto which the piece moves.
     """
     def __make_move(self, target_pos):
         i, j = target_pos[0], target_pos[1]

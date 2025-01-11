@@ -4,7 +4,14 @@ from Scripts.TurnValidator import move_matrix, is_in_check, is_valid_move, get_a
 
 """Script for handling all GUI operations"""
 
-"""Sets up the display window upon opening the game"""
+"""
+Sets up the display window upon opening the game.
+
+Returns:
+    Surface: Pygame object which represents the display itself.
+    Clock: Pygame object which regulates the FPS of the game.
+    int: The framerate the game runs at.
+"""
 def setup_display():
     pygame.init()
     display = pygame.display.set_mode((960,960))
@@ -12,7 +19,12 @@ def setup_display():
     FPS = 60
     return display, clock, FPS
 
-"""Loads the images into objects and adjusts the scale"""
+"""
+Loads the images into objects and adjusts the scale.
+
+Returns:
+    list: 3 lists containing the loaded game assets.
+"""
 def load_assets():
     # load the pieces assets
     pieces = [pygame.image.load("Assets/empty_pixel.png"), # the first asset is an empty pixel for the sake of convenience
@@ -69,7 +81,20 @@ def load_assets():
 
     return pieces, index, misc
 
-"""Draws the game board upon being given a game state"""
+"""
+Draws the game board upon being given a game state.
+
+Args:
+    pieces (list): List containing game assets representing game pieces.
+    index (list): List containing game assets representing the board indexes.
+    misc (list): List containing game assets representing miscellaneous assets.
+    display (Surface): Pygame object which represents the display itself.
+    board (Board): Game object containing information about the game state.
+    turn (int): Indicates which player makes the next move.
+    mouse_pos (tuple): The position of the mouse.
+    selected (tuple): Coordinates of the selected piece or (0, 0) if no piece is selected.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+"""
 def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected, en_passant):
     __draw_game_board(board, display, index)
     __draw_gameplay_elements(board, display, pieces, misc, turn, en_passant)
@@ -98,7 +123,16 @@ def draw_board(pieces, index, misc, display, board, turn, mouse_pos, selected, e
     #print(get_all_valid_moves(board.get_pieces(), turn, (8, 2)))
     #print(get_all_possible_moves(board.get_pieces(), turn))
 
-"""Custom mouse/GUI interaction for selecting a piece on pawn promotion"""
+"""
+Custom mouse/GUI interaction for selecting a piece on pawn promotion.
+
+Args:
+    display (Surface): Pygame object which represents the display itself.
+    mouse_pos (tuple): The position of the mouse.
+    pieces (list): List containing game assets representing game pieces.
+    selected (tuple): Coordinates of the selected piece or (0, 0) if no piece is selected.
+    pawn (int): Value of the selected pawn.
+"""
 def __pawn_promotion_interaction(display, mouse_pos, pieces, selected, pawn):
     yellow = (252, 237, 106)
     green = (106, 252, 143)
@@ -120,14 +154,31 @@ def __pawn_promotion_interaction(display, mouse_pos, pieces, selected, pawn):
     if j == selected[1] and 1 < i < 6:
         pygame.draw.rect(display, green, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
 
-"""Draws the game end pop-up"""
+"""
+Draws the game end pop-up.
+
+Args:
+    display (Surface): Pygame object which represents the display itself.
+    turn (int): Indicates which player makes the next move.
+    misc (list): List containing game assets representing miscellaneous assets.
+"""
 def __draw_game_end(display, turn, misc):
     if turn == 0:
         display.blit(misc[6], (0, 4 * 96))
     else:
         display.blit(misc[5], (0, 4 * 96))
 
-"""Makes the GUI interactive with the mouse"""
+"""
+Makes the GUI interactive with the mouse.
+
+Args:
+    board (Board): Game object containing information about the game state.
+    display (Surface): Pygame object which represents the display itself.
+    turn (int): Indicates which player makes the next move.
+    mouse_pos (tuple): The position of the mouse.
+    selected (tuple): Coordinates of the selected piece or (0, 0) if no piece is selected.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
+"""
 def __draw_mouse_interaction(board, display, turn, mouse_pos, selected, en_passant):
     reference = 6 + turn * 6
     green = (106, 252, 143)
@@ -166,7 +217,14 @@ def __draw_mouse_interaction(board, display, turn, mouse_pos, selected, en_passa
             else: # coloring red if the piece can move there but is not a valid move
                 pygame.draw.rect(display, red, pygame.Rect((j * 96, i * 96), (96, 96)), 8)
 
-"""Draws the chess board itself"""
+"""
+Draws the chess board itself.
+
+Args:
+    board (Board): Game object containing information about the game state.
+    display (Surface): Pygame object which represents the display itself.
+    index (list): List containing game assets representing the board indexes.
+"""
 def __draw_game_board(board, display, index):
     display.fill((255, 255, 255))
 
@@ -202,9 +260,16 @@ def __draw_game_board(board, display, index):
         display.blit(index[layout[i]], (96 * i, 96 * (10 - 1)))
         i += 1
 
-"""Draws the gameplay elements:
-Chess pieces
-Turn indicator
+"""
+Draws the gameplay elements (game pieces and turn indicators).
+
+Args:
+    board (Board): Game object containing information about the game state.
+    display (Surface): Pygame object which represents the display itself.
+    pieces (list): List containing game assets representing game pieces.
+    misc (list): List containing game assets representing miscellaneous assets.
+    turn (int): Indicates which player makes the next move.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
 """
 def __draw_gameplay_elements(board, display, pieces, misc, turn, en_passant):
     # drawing the pieces
@@ -229,8 +294,14 @@ def __draw_gameplay_elements(board, display, pieces, misc, turn, en_passant):
         else:
             display.blit(misc[3], (9 * 96, 0))
 
-"""Test function
-Draws the movement matrix for a given piece
+"""
+Test function
+Draws the movement matrix for a given piece.
+
+Args:
+    board (Board): Game object containing information about the game state.
+    display (Surface): Pygame object which represents the display itself.
+    en_passant (list): Matrix with 2 lines, each keeping track of where en_passant and castling can be performed.
 """
 def __draw_matrix(board, display, en_passant):
     i, j = 0, 0

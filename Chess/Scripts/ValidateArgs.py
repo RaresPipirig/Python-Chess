@@ -1,8 +1,14 @@
 
-"""Validates the commandline arguments
-returns 0 if invalid args
-returns 1 if 1 player game
-returns 2 if 2 player game
+"""
+Validates the commandline arguments.
+
+Args:
+    args (list): Command line arguments.
+
+Returns:
+        int: 0 if invalid args
+        int: 1 if 1 player game
+        int: 2 if 2 player game
 """
 def validate_args(args):
     if len(args) != 2:
